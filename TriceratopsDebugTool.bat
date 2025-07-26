@@ -1,137 +1,297 @@
 @echo off
 title Triceratops Debug Tool
-color 0e
+color 0E
+setlocal enabledelayedexpansion
 
-:menu
-cls
-echo ----------------------
-echo Triceratops Debug Tool
-echo ----------------------
-echo.
-echo Select an option:
-echo.
-echo [1] System File Checker
-echo [2] Deployment Image Servicing and Management
-echo [3] Disk Cleanup (Work in Progress)
-echo [4] Defragment and Optimize Drives
-echo [5] Restart Windows Explorer
-echo [6] Exit Debug Tool
-echo.
-set /p op=">>> "
-if %op%==1 goto 1
-if %op%==2 goto 2
-if %op%==3 goto 3
-if %op%==4 goto 4
-if %op%==5 goto 5
-if %op%==6 goto exit
-goto error
-pause >nul
+:: Check if running as administrator
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Requesting administrative privileges . . .
+    powershell -Command "Start-Process '%~f0' -Verb runAs"
+    exit /b
+)
 
-:1
+:mainMenu
 cls
-echo ----------------------
+echo ==================================================
+echo Main Menu
+echo ==================================================
+echo.
+echo 1. System File Checker
+echo 2. Deployment Image Servicing and Management
+echo 3. Restart Windows Explorer
+echo 4. Defragment and Optimize Drives
+echo 5. Open Disk Cleanup
+echo 6. Open Sound Control Panel
+echo 7. Open Advanced System Settings
+echo 8. List System Information
+echo.
+echo 9. Exit
+echo.
+
+set /p choice=Select an option: 
+
+if "%choice%"=="1" call :sfc
+if "%choice%"=="2" call :dism
+if "%choice%"=="3" call :rwe
+if "%choice%"=="4" call :dod
+if "%choice%"=="5" call :odc
+if "%choice%"=="6" call :scp
+if "%choice%"=="7" call :ass
+if "%choice%"=="8" call :lsi
+if "%choice%"=="9" goto :eof
+
+cls
+echo Invalid option selected.
+pause
+goto :mainMenu
+
+:: ---- System File Checker ----
+:sfc
+cls
+echo ==================================================
 echo System File Checker
-echo ----------------------
+echo ==================================================
 echo.
-echo [1] Start Scan
-echo [2] Return to Menu
+echo 1. Scan Now    // Scans all protected system files and attempts to repair any issues found.
+echo 2. Verify Only // Scans all protected system files, but does not attempt to repair them.
+echo 3. Scan Once   // Scans all protected system files once at the next system startup.
+echo 4. Purge Cache // Purges the file cache and scans all protected system files.
+echo 5. Cancel      // Cancels any pending scans.
+==
+echo 6. Return to Main Menu
 echo.
-set /p op=">>> "
-if %op%==1 goto sfcscan
-if %op%==2 goto menu
-goto error
-pause >nul
 
-:sfcscan
+set /p choice=Select an option: 
+
+if "%choice%"=="1" call :scanNow
+if "%choice%"=="2" call :verifyOnly
+if "%choice%"=="3" call :scanOnce
+if "%choice%"=="4" call :purgeCache
+if "%choice%"=="5" call :cancel
+if "%choice%"=="6" goto :mainMenu
+
 cls
+echo Invalid option selected.
+pause
+goto :mainMenu
+
+:scanNow
+cls
+echo Running System File Checker - Scan Now . . .
 sfc /scannow
-echo Press Any Key to Continue...
-pause >nul
-goto menu
+echo.
+pause
+goto :mainMenu
 
-:2
+:verifyOnly
 cls
-echo ----------------------
+echo Running System File Checker - Verify Only . . .
+sfc /verifyonly
+echo.
+pause
+goto :mainMenu
+
+:scanOnce
+cls
+echo Running System File Checker - Scan Once . . .
+sfc /scanonce
+echo.
+pause
+goto :mainMenu
+
+:purgeCache
+cls
+echo Running System File Checker - Purge Cache . . .
+sfc /purgeCache
+echo.
+pause
+goto :mainMenu
+
+:cancel
+cls
+echo Running System File Checker - Cancel Scan . . .
+sfc /cancel
+echo.
+pause
+goto :mainMenu
+
+:: ---- Deployment Image Servicing and Management ----
+:dism
+cls
+echo ==================================================
 echo Deployment Image Servicing and Management
-echo ----------------------
+echo ==================================================
 echo.
-echo [1] Scan Health
-echo [2] Check Health
-echo [3] Restore Health
-echo [4] Return to Menu
+echo 1. Check Health    // Performs a quick check to determine if the Windows image has been corrupted.
+echo 2. Scan Health     // Executes a more comprehensive scan for image corruption.
+echo 3. Restore Health  // Scans for and repairs corrupted files in the Windows image.
 echo.
-set /p op=">>> "
-if %op%==1 goto scanhealth
-if %op%==2 goto checkhealth
-if %op%==3 goto restorehealth
-if %op%==4 goto menu
-goto error
-pause >nul
-goto menu
-
-:scanhealth
-cls
-dism.exe /Online /Cleanup-Image /ScanHealth
-echo Press Any Key to Continue...
-pause >nul
-goto menu
-
-:checkhealth
-cls
-dism.exe /Online /Cleanup-Image /CheckHealth
-pause >nul
-goto menu
-
-:restorehealth
-cls
-dism.exe /Online /Cleanup-Image /RestoreHealth
-pause >nul
-goto menu
-
-:3
-cls
-echo ----------------------
-echo Disk Cleanup
-echo ----------------------
+echo 4. Return to Main Menu
 echo.
-cleanmgr.exe /sagerun:65535
-echo Press Any Key to Continue...
-pause >nul
-goto menu
 
+set /p choice=Select an option: 
 
-:4
+if "%choice%"=="1" call :checkHealth
+if "%choice%"=="2" call :scanHealth
+if "%choice%"=="3" call :restoreHealth
+if "%choice%"=="4" goto :mainMenu
+
 cls
-echo ----------------------
-echo Defragment and Optimize Drives
-echo ----------------------
-echo.
-echo Defragmenting Hard Disks. This Might Take Awhile...
-ping localhost -n 3 >nul
-defrag -c -v
-echo.
-echo Press Any Key to Continue...
-pause >nul
-goto menu
+echo Invalid option selected.
+pause
+goto :mainMenu
 
-:5
+:checkHealth
 cls
-echo ----------------------
-echo Restart Windows Explorer
-echo ----------------------
+echo Running Deployment Image Servicing and Management - Check Health . . .
+dism /Online /Cleanup-Image /CheckHealth
 echo.
+pause
+goto :mainMenu
+
+:scanHealth
+cls
+echo Running Deployment Image Servicing and Management - Scan Health . . .
+dism /Online /Cleanup-Image /ScanHealth
+echo.
+pause
+goto :mainMenu
+
+:restoreHealth
+cls
+echo Running Deployment Image Servicing and Management - Restore Health . . .
+dism /Online /Cleanup-Image /RestoreHealth
+echo.
+pause
+goto :mainMenu
+
+:: ---- Restarting Windows Explorer ----
+:rwe
+cls
+echo Restarting Windows Explorer . . .
 taskkill /f /im explorer.exe
 timeout /t 1 /nobreak > nul
 start explorer.exe
-echo Press Any Key to Continue...
-pause >nul
-goto menu
+echo.
+pause
+goto :mainMenu
 
-:error
+:: ---- Defragment and Optimize Drives ----
+:dod
 cls
-echo Error Has Occurred
-ping localhost -n 3 >nul
-goto menu
+echo Defragment and Optimize Drives . . .
+start dfrgui.exe
+echo.
+pause
+goto :mainMenu
 
-:exit
-/b
+:: ---- Open Disk Cleanup ----
+:odc
+cls
+echo Opening Disk Cleanup . . .
+start cleanmgr.exe
+echo.
+pause
+goto :mainMenu
+
+:: ---- Open Sound Control Panel ----
+:scp
+cls
+echo Opening Sound Control Panel . . .
+control mmsys.cpl sounds
+echo.
+pause
+goto :mainMenu
+
+:: ---- Open Advanced System Settings ----
+:ass
+cls
+echo Opening Advanced System Settings . . .
+sysdm.cpl
+echo.
+pause
+goto :mainMenu
+
+:: ---- List System Information ----
+:lsi
+cls
+echo ==================================================
+echo System Information
+echo ==================================================
+echo.
+echo OS Information:
+systeminfo | findstr /B /C:"OS"
+echo.
+echo --------------------------------------------------
+echo.
+echo BIOS Information:
+powershell -Command "Get-WmiObject -Class Win32_BIOS | Select-Object Manufacturer, Name, Version"
+echo.
+echo --------------------------------------------------
+echo.
+echo Motherboard Information:
+powershell -Command "Get-WmiObject -Class Win32_BaseBoard | Select-Object Manufacturer, Product, SerialNumber"
+echo.
+echo --------------------------------------------------
+echo.
+echo System Architecture: %PROCESSOR_ARCHITECTURE%
+echo.
+echo --------------------------------------------------
+echo.
+echo CPU Information:
+powershell -Command "Get-WmiObject -Class Win32_Processor | Select-Object -ExpandProperty Name"
+echo.
+echo --------------------------------------------------
+echo.
+echo RAM Information:
+systeminfo | findstr /C:"Total Physical Memory"
+echo.
+echo --------------------------------------------------
+echo.
+echo GPU Information:
+powershell -Command "Get-WmiObject -Class Win32_VideoController | Select-Object Name, AdapterRAM, DriverVersion"
+echo.
+echo --------------------------------------------------
+echo.
+echo Storage Information:
+powershell -Command "Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID, @{Name='FreeSpace(GB)';Expression={[math]::round($_.FreeSpace/1GB,2)}}, @{Name='Size(GB)';Expression={[math]::round($_.Size/1GB,2)}}"
+echo.
+echo --------------------------------------------------
+echo.
+ipconfig
+echo.
+echo --------------------------------------------------
+echo.
+getmac
+echo.
+echo --------------------------------------------------
+echo.
+systeminfo | findstr /C:"System Boot Time"
+echo.
+echo --------------------------------------------------
+echo.
+echo USB Devices:
+powershell -Command "Get-WmiObject -Class Win32_USBHub | Select-Object DeviceID, PNPDeviceID, Description"
+echo.
+echo --------------------------------------------------
+echo.
+echo Sound Devices:
+powershell -Command "Get-WmiObject -Class Win32_SoundDevice | Select-Object Name, Manufacturer, Status"
+echo.
+echo --------------------------------------------------
+echo.
+echo Running Processes:
+powershell -Command "Get-Process | Select-Object Name, Id, CPU, StartTime"
+echo.
+echo --------------------------------------------------
+echo.
+echo Installed Programs:
+powershell -Command "Get-WmiObject -Class Win32_Product | Select-Object Name, Version"
+echo.
+echo --------------------------------------------------
+echo.
+pause
+goto :mainMenu
+
+goto :eof
