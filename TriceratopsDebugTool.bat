@@ -295,3 +295,7 @@ pause
 goto :mainMenu
 
 goto :eof
+
+:eof
+cls
+exit
