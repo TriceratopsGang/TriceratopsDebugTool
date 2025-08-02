@@ -55,21 +55,15 @@ echo ==================================================
 echo.
 echo 1. Scan Now    // Scans all protected system files and attempts to repair any issues found.
 echo 2. Verify Only // Scans all protected system files, but does not attempt to repair them.
-echo 3. Scan Once   // Scans all protected system files once at the next system startup.
-echo 4. Purge Cache // Purges the file cache and scans all protected system files.
-echo 5. Cancel      // Cancels any pending scans.
 ==
-echo 6. Return to Main Menu
+echo 3. Return to Main Menu
 echo.
 
 set /p choice=Select an option: 
 
 if "%choice%"=="1" call :scanNow
 if "%choice%"=="2" call :verifyOnly
-if "%choice%"=="3" call :scanOnce
-if "%choice%"=="4" call :purgeCache
-if "%choice%"=="5" call :cancel
-if "%choice%"=="6" goto :mainMenu
+if "%choice%"=="3" goto :mainMenu
 
 cls
 echo Invalid option selected.
@@ -88,30 +82,6 @@ goto :mainMenu
 cls
 echo Running System File Checker - Verify Only . . .
 sfc /verifyonly
-echo.
-pause
-goto :mainMenu
-
-:scanOnce
-cls
-echo Running System File Checker - Scan Once . . .
-sfc /scanonce
-echo.
-pause
-goto :mainMenu
-
-:purgeCache
-cls
-echo Running System File Checker - Purge Cache . . .
-sfc /purgeCache
-echo.
-pause
-goto :mainMenu
-
-:cancel
-cls
-echo Running System File Checker - Cancel Scan . . .
-sfc /cancel
 echo.
 pause
 goto :mainMenu
